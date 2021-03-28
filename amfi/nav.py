@@ -9,8 +9,9 @@ import io
 import re
 import json
 import logging
+import dataclasses
 from dataclasses import dataclass
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 
 import requests
 
@@ -20,12 +21,41 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Fund:
+    NAV: str
+    Date: str
     SchemeCode: str
     SchemeName: str
     ISINDivPayoutGrowth: str
     ISINDivReinvestment: str
-    NAV: str
-    Date: str
+    SchemeType: Optional[str] = ''
+    SchemeSubType: Optional[str] = ''
+    SchemeFundHouse: Optional[str] = ''
+
+class EnhancedJSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if dataclasses.is_dataclass(o):
+            return dataclasses.asdict(o)
+        return super().default(o)
+
+def serialize_fund(fund: Fund) -> str:
+    """Serialize amfi.Fund to a str.
+
+    Notes
+    -----
+        Format: json
+        TODO: decide serialization format
+    """
+    return json.dumps(fund, cls=EnhancedJSONEncoder)
+
+def deserialize_fund(serialized_fund: str) -> Fund:
+    """Deserialize serialized fund from str to amfi.Fund.
+
+    Notes
+    -----
+        Format: json
+        TODO: decide serialization format
+    """
+    return Fund(**json.loads(serialized_fund))
 
 LINE_BREAK = '\r\n'
 
