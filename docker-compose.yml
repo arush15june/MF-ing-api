@@ -4,3 +4,7 @@ services:
     image: redislabs/redisearch:latest
     ports:
       - 6379:6379
+  app:
+    build: .
+    ports:
+      - 8000:8000

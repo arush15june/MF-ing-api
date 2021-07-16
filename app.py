@@ -49,10 +49,15 @@ class FundResponse(BaseModel):
     NAV: str
     Date: str
 
+class FundListResponse(BaseModel):
+    pg: str
+    items: List[str]
+    last: int
+
 PAGE_COUNT_LIMIT = 1000
 
-@app.get("/api/v1/fund")
-async def fetch_all_funds(pg: Optional[int] = 0, count: Optional[int] = Query(10, le=PAGE_COUNT_LIMIT)):
+@app.get("/api/v1/funds")
+async def fetch_all_funds(pg: Optional[int] = 0, count: Optional[int] = Query(10, le=PAGE_COUNT_LIMIT)) -> FundListResponse:
     """Fetch all fund names.
     """
     try:
@@ -63,29 +68,25 @@ async def fetch_all_funds(pg: Optional[int] = 0, count: Optional[int] = Query(10
     except Exception as e:
         raise HTTPException(status_code=400, detail='Error fetching funds.')
 
-    return {
-        'pg': pg,
-        'items': fund_keys,
-        'last': total_pages,
-    }
+    return FundListResponse(pg=pg, items=fund_keys, last=total_pages)
 
-@app.post("/api/v1/fund")
-async def fetch_fund(item: FetchRequest) -> FundResponse:
+@app.get("/api/v1/fund")
+async def fetch_fund(key: str) -> FundResponse:
     """Fetch fund with name: key.
     """
     try:
-        fund = await nav_cache_provider.get_fund(item.key)
+        fund = await nav_cache_provider.get_fund(key)
     except FundKeyNotFoundError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
     return FundResponse(**dataclasses.asdict(fund))
 
-@app.post("/api/v1/fund_house")
-async def fetch_fund(item: FetchRequest, scheme_sub_type) -> List[str]:
+@app.get("/api/v1/fund_house")
+async def fetch_fund(key: str) -> List[str]:
     """Fetch list of funds in fund house with name: key.
     """
     try:
-        funds = await nav_cache_provider.get_fund_house(item.key)
+        funds = await nav_cache_provider.get_fund_house(key)
     except FundHouseKeyNotFoundError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
