@@ -9,6 +9,7 @@ Requires docker and docker-compose
 ## TODO: API Docs
 
 | Endpoint | Usage |
+| - | - |
 | /api/v1/funds | Fetch names of all funds |
 | /api/v1/fund?key=<fund_name> | Fetch data for a single fund |
 | /api/v1/fund_house | Fetch funds of a single fund house |
